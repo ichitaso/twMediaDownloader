@@ -57,7 +57,7 @@ function get_values( name_list ) {
 */
 
 var reload_tabs = ( () => {
-    var reg_host = /([^.]+\.)?twitter\.com/,
+    var reg_host = /([^.]+\.)?(twitter\.com|x\.com)/,
         
         reload_tab = ( tab_info ) => {
             log_debug( 'reload_tab():', tab_info );

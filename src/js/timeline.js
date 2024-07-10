@@ -1480,7 +1480,7 @@ const
                     reply_count : tweet_status.reply_count,
                     retweet_count : tweet_status.retweet_count,
                     like_count : tweet_status.favorite_count,
-                    tweet_url : 'https://twitter.com/' + user.screen_name + '/status/' + tweet_status.id_str,
+                    tweet_url : 'https://' + (user.screen_name.includes('x.com') ? 'x.com' : 'twitter.com') + user.screen_name + '/status/' + tweet_status.id_str,
                 } );
             }
             catch ( error ) {

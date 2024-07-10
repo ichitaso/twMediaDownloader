@@ -5,6 +5,7 @@
 // @namespace       https://memo.furyutei.work/
 // @author          furyu
 // @include         https://twitter.com/*
+// @include         https://x.com/*
 // @include         https://mobile.twitter.com/*
 // @include         https://api.twitter.com/*
 // @include         https://nazo.furyutei.work/oauth/*
@@ -14,6 +15,7 @@
 // @grant           GM_deleteValue
 // @connect         mobile.twitter.com
 // @connect         twitter.com
+// @connect         x.com
 // @connect         twimg.com
 // @connect         cdn.vine.co
 // @require         https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
@@ -141,7 +143,7 @@ var SCRIPT_NAME = 'twMediaDownloader',
     DEBUG = false,
     self = undefined;
 
-if ( ! /^https:\/\/(?:mobile\.)?twitter\.com(?!\/account\/login_verification)/.test( w.location.href ) ) {
+if ( ! /^https:\/\/(?:mobile\.)?(twitter\.com|x\.com)(?!\/account\/login_verification)/.test( w.location.href ) ) {
     if ( ( ! IS_CHROME_EXTENSION ) && ( typeof Twitter != 'undefined' ) ) {
         // Twitter OAuth 認証用ポップアップとして起動した場合は、Twitter.initialize() により tokens 取得用処理を実施（内部でTwitter.initializePopupWindow()を呼び出し）
         // ※ユーザースクリプトでの処理（拡張機能の場合、session.jsにて実施）
@@ -152,11 +154,10 @@ if ( ! /^https:\/\/(?:mobile\.)?twitter\.com(?!\/account\/login_verification)/.t
     return;
 }
 
-if ( /^https:\/\/(?:mobile\.)?twitter\.com\/i\/cards/.test( w.location.href ) ) {
+if ( /^https:\/\/(?:mobile\.)?(twitter\.com|x\.com)\/i\/cards/.test( w.location.href ) ) {
     // https://twitter.com/i/cards/～ では実行しない
     return;
 }
-
 
 if ( ! d.querySelector( 'div#react-root' ) ) {
     return;
@@ -848,7 +849,7 @@ function get_tweet_id( url ) {
     
     url = url.trim();
     
-    if ( url.match( /^https?:\/\/(?:mobile\.)?twitter\.com\/[^\/]+\/[^\/]+\/(\d+)(?:$|\/)/ ) ) {
+    if ( url.match( /^https?:\/\/(?:mobile\.)?(twitter\.com|x\.com)\.com\/[^\/]+\/[^\/]+\/(\d+)(?:$|\/)/ ) ) {
         return RegExp.$1;
     }
     
@@ -2313,7 +2314,7 @@ var download_media_timeline = ( function () {
         ,   log : ( function () {
                 var reg_char_to_escape = /[&'`"<>]/g,
                     reg_url =  /(https?:\/\/[\w\/:%#$&?\(\)~.=+\-;]+)/g,
-                    reg_tweet_url = /\/\/twitter\.com/;
+                    reg_tweet_url = /\/\/(?:twitter\.com|x\.com)/;
                 
                 function escape_html( match ) {
                     return {

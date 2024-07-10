@@ -5,6 +5,7 @@
 // @namespace       http://furyu.hatenablog.com/
 // @author          furyu
 // @include         https://twitter.com/*
+// @include         https://x.com/*
 // @include         https://api.twitter.com/*
 // @include         https://nazo.furyutei.work/oauth/*
 // @grant           GM_xmlhttpRequest
@@ -12,6 +13,7 @@
 // @grant           GM_getValue
 // @grant           GM_deleteValue
 // @connect         twitter.com
+// @connect         x.com
 // @connect         twimg.com
 // @connect         cdn.vine.co
 // @require         https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
@@ -148,7 +150,7 @@ if ( d.querySelector( 'div#react-root' ) ) {
     return;
 }
 
-if ( ! /^https:\/\/twitter\.com(?!\/account\/login_verification)/.test( w.location.href ) ) {
+if ( ! /^https:\/\/(?:twitter\.com|x\.com)(?!\/account\/login_verification)/.test( w.location.href ) ) {
     if ( ( ! IS_CHROME_EXTENSION ) && ( typeof Twitter != 'undefined' ) ) {
         // Twitter OAuth 認証用ポップアップとして起動した場合は、Twitter.initialize() により tokens 取得用処理を実施（内部でTwitter.initializePopupWindow()を呼び出し）
         // ※ユーザースクリプトでの処理（拡張機能の場合、session.jsにて実施）
@@ -159,7 +161,7 @@ if ( ! /^https:\/\/twitter\.com(?!\/account\/login_verification)/.test( w.locati
     return;
 }
 
-if ( /^https:\/\/twitter\.com\/i\/cards/.test( w.location.href ) ) {
+if ( /^https:\/\/(?:twitter\.com|x\.com)\/i\/cards/.test( w.location.href ) ) {
     // https://twitter.com/i/cards/～ では実行しない
     return;
 }
@@ -725,7 +727,7 @@ function get_tweet_id( url ) {
     
     url = url.trim();
     
-    if ( url.match( /^https?:\/\/twitter\.com\/[^\/]+\/[^\/]+\/(\d+)(?:$|\/)/ ) ) {
+    if (url.match(/^https?:\/\/(?:twitter\.com|x\.com)\/[^\/]+\/[^\/]+\/(\d+)(?:$|\/)/)) {
         return RegExp.$1;
     }
     
@@ -1494,81 +1496,77 @@ var download_media_timeline = ( function () {
                 
                 if ( filter_info.is_for_likes_timeline ) {
                     self.media_timeline_parameters = {
-                        max_position : self.until_id
-                        
-                    ,   api_endpoint : {
-                            url : 'https://twitter.com/' + ( ( self.screen_name ) ? self.screen_name : 'twitter' ) + '/likes/timeline'
-                        ,   data : {
-                                include_available_features : 1
-                            ,   include_entities : 1
-                            ,   reset_error_state : false
-                            //,   last_note_ts : null
-                            ,   max_position : null
-                            ,   count : 1 // いいねタイムライン取得時は 1 件ずつにし、返された JSON の min_position（次回の max_position）より、いいね時刻情報を取得
+                        max_position: self.until_id,
+                        api_endpoint: {
+                            url: 'https://' + (self.screen_name ? self.screen_name : 'twitter') + '.com/' + (self.screen_name ? self.screen_name : 'twitter') + '/likes/timeline',
+                            data: {
+                                include_available_features: 1,
+                                include_entities: 1,
+                                reset_error_state: false,
+                                // last_note_ts: null,
+                                max_position: null,
+                                count: 1 // いいねタイムライン取得時は 1 件ずつにし、返された JSON の min_position（次回の max_position）より、いいね時刻情報を取得
                             }
                         }
                     };
                 }
                 else if ( filter_info.is_for_notifications_timeline ) {
                     self.media_timeline_parameters = {
-                        max_position : self.until_id
-                        
-                    ,   api_endpoint : {
-                            url : 'https://twitter.com/mentions/timeline'
-                        ,   data : {
-                                include_available_features : 1
-                            ,   include_entities : 1
-                            ,   reset_error_state : false
-                            //,   last_note_ts : null
-                            ,   max_position : null
-                            ,   filter : 'all'
+                        max_position: self.until_id,
+                        api_endpoint: {
+                            url: 'https://' + (self.screen_name ? self.screen_name : 'twitter') + '.com/mentions/timeline',
+                            data: {
+                                include_available_features: 1,
+                                include_entities: 1,
+                                reset_error_state: false,
+                                // last_note_ts: null,
+                                max_position: null,
+                                filter: 'all'
                             }
                         }
                     };
                 }
                 else {
                     self.media_timeline_parameters = {
-                        max_position : self.until_id
-                        
-                    ,   api_endpoint : {
-                            url : 'https://twitter.com/i/profiles/show/' + ( ( self.screen_name ) ? self.screen_name : 'twitter' ) + ( ( filter_info.include_retweets || filter_info.nomedia ) ? '/timeline/with_replies' : '/media_timeline' )
-                        ,   data : {
-                                include_available_features : 1
-                            ,   include_entities : 1
-                            ,   reset_error_state : false
-                            //,   last_note_ts : null
-                            ,   max_position : null
+                        max_position: self.until_id,
+                        api_endpoint: {
+                            url: 'https://' + (self.screen_name ? self.screen_name : 'twitter') + '.com/i/profiles/show/' + (self.screen_name ? self.screen_name : 'twitter') + (filter_info.include_retweets || filter_info.nomedia ? '/timeline/with_replies' : '/media_timeline'),
+                            data: {
+                                include_available_features: 1,
+                                include_entities: 1,
+                                reset_error_state: false,
+                                // last_note_ts: null,
+                                max_position: null
                             }
                         }
                     };
                 }
                 
                 self.search_timeline_parameters = {
-                    api_max_position : null
+                    api_max_position : null,
                     // ※ API で指定する max_position は数値ではなく、"TWEET-(from tweet id)-(to tweet id)-(長い文字列)==-T-0" のような文字列であることに注意
                     //    最初はわからないため、HTML より data-min-position を読み取って使用する
-                
-                ,   html_endpoint : {
-                        url : 'https://twitter.com/search'
-                    ,   data : {
-                            f : 'tweets'
-                        ,   vertical : 'default'
-                        ,   src : 'typd'
-                        ,   q : null
+                    html_endpoint: {
+                        url: 'https://' + (self.screen_name ? self.screen_name : 'twitter') + '.com/search',
+                        data: {
+                            f: 'tweets',
+                            vertical: 'default',
+                            src: 'typd',
+                            q: null
                         }
-                    }
-                ,   api_endpoint : {
-                        url : 'https://twitter.com/i/search/timeline'
-                    ,   data : {
-                            f : 'tweets'
-                        ,   vertical : 'default'
-                        ,   src : 'typd'
-                        ,   include_available_features : '1'
-                        ,   include_entities : '1'
-                        ,   reset_error_state : 'false'
-                        ,   q : null
-                        //,   last_note_ts : null
-                        ,   max_position : null
+                    },
+                    api_endpoint: {
+                        url: 'https://' + (self.screen_name ? self.screen_name : 'twitter') + '.com/i/search/timeline',
+                        data: {
+                            f: 'tweets',
+                            vertical: 'default',
+                            src: 'typd',
+                            include_available_features: '1',
+                            include_entities: '1',
+                            reset_error_state: 'false',
+                            q: null,
+                            // last_note_ts: null,
+                            max_position: null
                         }
                     }
                 };
@@ -2073,7 +2071,7 @@ var download_media_timeline = ( function () {
                     return null;
                 }
                 if ( tweet_url.charAt( 0 ) == '/' ) {
-                    tweet_url = 'https://twitter.com' + tweet_url;
+                    tweet_url = 'https://' + (tweet_url.includes('x.com') ? 'x.com' : 'twitter.com') + tweet_url;
                 }
                 
                 try {
@@ -2762,7 +2760,7 @@ var download_media_timeline = ( function () {
         ,   log : ( function () {
                 var reg_char_to_escape = /[&'`"<>]/g,
                     reg_url =  /(https?:\/\/[\w\/:%#$&?\(\)~.=+\-;]+)/g,
-                    reg_tweet_url = /\/\/twitter\.com/;
+                    reg_tweet_url = /\/\/(?:twitter\.com|x\.com)/;
                 
                 function escape_html( match ) {
                     return {
